@@ -10,3 +10,5 @@ Upload a chest X-ray -> multi-label predictions with a heatmap overlay.
 uvicorn serving.app:app --reload --port 8000
 # Web
 cd webapp && npm install && npm run dev
+# to train model
+run python train.py
