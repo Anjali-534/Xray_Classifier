@@ -1,25 +1,25 @@
-# train_fastai_timm.py (CPU-optimized)
+# train_fastai_timm.py (CPU-optimized with AUROC/AUPRC at test stage only)
 
 import os
 from pathlib import Path
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-from torchmetrics.classification import MultilabelAUROC, MultilabelAveragePrecision
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, confusion_matrix
 
 import timm
 from fastai.vision.all import *
+from torchmetrics.classification import MulticlassAUROC, MulticlassAveragePrecision
 
 # ---------------- CONFIG ----------------
 DATA_ROOT = Path("../COVID-19_Radiography_Dataset")
-MODEL_NAME = "mobilenetv3_small_100"   # ✅ light model for CPU
-BATCH_SIZE = 16                        # ✅ smaller batch size for CPU
-IMAGE_SIZE = 160                       # ✅ smaller image resolution
+MODEL_NAME = "mobilenetv3_small_100"   # ✅ light CPU model
+BATCH_SIZE = 16
+IMAGE_SIZE = 160
 EPOCHS = 5
 SEED = 42
-NUM_WORKERS = 0                        # ✅ safer for Windows CPU
+NUM_WORKERS = 0                       # ✅ safer on Windows
 CHECKPOINT_DIR = Path("../models")
 CHECKPOINT_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -61,7 +61,7 @@ dblock = DataBlock(
     get_x=ColReader("path"),
     get_y=ColReader("label"),
     splitter=splitter,
-    item_tfms=Resize(224),  # fast initial resize
+    item_tfms=Resize(224),
     batch_tfms=[
         *aug_transforms(size=IMAGE_SIZE, flip_vert=False, max_rotate=5, max_zoom=1.05, max_lighting=0.1),
         Normalize.from_stats(*imagenet_stats)
@@ -73,45 +73,24 @@ dls = dblock.dataloaders(combined, bs=BATCH_SIZE, num_workers=NUM_WORKERS)
 print("Classes:", dls.vocab)
 n_classes = len(dls.vocab)
 
-roc_auc = MultilabelAUROC(num_labels=n_classes, average="macro")
-# AUPRC (macro, average precision)
-auprc = MultilabelAveragePrecision(num_labels=n_classes, average="macro")
 # ---------------- Model ----------------
 def create_timm_model(arch_name, n_out, pretrained=True):
     return timm.create_model(arch_name, pretrained=pretrained, num_classes=n_out)
 
 model = create_timm_model(MODEL_NAME, n_classes, pretrained=True)
-class TorchMetricWrapper(Callback):
-    def __init__(self, metric, name):
-        self.metric = metric
-        self.name = name
-
-    def before_fit(self): self.metric.reset()
-    def before_epoch(self): self.metric.reset()
-    def after_batch(self):
-        if not self.training:
-            preds = self.learn.pred
-            targs = self.learn.y
-            self.metric.update(preds.cpu(), targs.cpu())
-    def after_epoch(self):
-        val = self.metric.compute().item()
-        self.learn.recorder.log.append(val)
-        print(f"{self.name}: {val:.4f}")
-        self.metric.reset()
 
 # ---------------- Learner ----------------
 learn = Learner(
     dls, model,
     loss_func=CrossEntropyLossFlat(),
     metrics=[accuracy],
-    cbs=[SaveModelCallback(monitor='accuracy', fname=f'{MODEL_NAME}_best'),
+    cbs=[
+        SaveModelCallback(monitor='accuracy', fname=f'{MODEL_NAME}_best'),
         EarlyStoppingCallback(monitor='accuracy', patience=3),
-        TorchMetricWrapper(roc_auc, "val_auroc"),
-        TorchMetricWrapper(auprc, "val_auprc"),
-         ]
+    ]
 )
 
-print("Starting training on CPU...")
+print("🚀 Starting training on CPU...")
 learn.fine_tune(EPOCHS, base_lr=1e-3)
 
 # ---------------- Save ----------------
@@ -119,21 +98,37 @@ export_path = CHECKPOINT_DIR / f"{MODEL_NAME}_cpu_fastai.pkl"
 learn.export(export_path)
 print("✅ Model exported to:", export_path)
 
-# ---------------- Evaluate ----------------
-test_files = list(test_df['path'].values)
-test_dl = learn.dls.test_dl(test_files, bs=BATCH_SIZE, num_workers=NUM_WORKERS)
+# # ---------------- Evaluate ----------------
+# print("\n📊 Evaluation on test set...")
 
-preds, targs = learn.get_preds(dl=test_dl)
-pred_labels = preds.argmax(dim=1).numpy()
-true_labels = targs.numpy()
+# # build test dataloader
+# # build test dataloader WITH labels
+# test_items = [(row["path"], row["label"]) for _, row in test_df.iterrows()]
+# test_dl = learn.dls.test_dl(test_items, bs=BATCH_SIZE, num_workers=NUM_WORKERS)
 
-print("\n📊 Classification report (test set):")
-print(classification_report(true_labels, pred_labels, target_names=dls.vocab))
+# preds, targs = learn.get_preds(dl=test_dl)
 
-cm = confusion_matrix(true_labels, pred_labels)
-plt.figure(figsize=(8,6))
-sns.heatmap(cm, annot=True, fmt='d', xticklabels=dls.vocab, yticklabels=dls.vocab, cmap='Blues')
-plt.xlabel("Predicted")
-plt.ylabel("True")
-plt.title("Confusion Matrix (Test Set)")
-plt.show()
+# # predictions
+# preds, targs = learn.get_preds(dl=test_dl)
+# pred_labels = preds.argmax(dim=1)
+# true_labels = targs
+
+# # sklearn classification report
+# print(classification_report(true_labels, pred_labels, target_names=dls.vocab))
+
+# # AUROC + AUPRC on test set
+# roc_auc = MulticlassAUROC(num_classes=n_classes, average="macro")(preds, true_labels)
+# auprc   = MulticlassAveragePrecision(num_classes=n_classes, average="macro")(preds, true_labels)
+
+# print(f"Test AUROC: {roc_auc:.4f}")
+# print(f"Test AUPRC: {auprc:.4f}")
+
+# # confusion matrix
+# cm = confusion_matrix(true_labels, pred_labels)
+# plt.figure(figsize=(8,6))
+# sns.heatmap(cm, annot=True, fmt='d',
+#             xticklabels=dls.vocab, yticklabels=dls.vocab, cmap='Blues')
+# plt.xlabel("Predicted")
+# plt.ylabel("True")
+# plt.title("Confusion Matrix (Test Set)")
+# plt.show()
