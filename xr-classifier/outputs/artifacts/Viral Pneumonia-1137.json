@@ -1,0 +1,14 @@
+{
+  "image": "C:\\Users\\ADMIN\\OneDrive\\Desktop\\xrayy\\xr-classifier\\COVID-19_Radiography_Dataset\\Viral Pneumonia\\images\\Viral Pneumonia-1137.png",
+  "predicted_class": 2,
+  "probs_calibrated": [
+    1.1284912034170702e-05,
+    0.06539181619882584,
+    0.9345968961715698
+  ],
+  "uncertainty_std": [
+    1.8189894035458565e-12,
+    0.0,
+    0.0
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "image": "C:\\Users\\ADMIN\\OneDrive\\Desktop\\xrayy\\xr-classifier\\COVID-19_Radiography_Dataset\\Lung_Opacity\\images\\Lung_Opacity-5191.png",
+  "predicted_class": 0,
+  "probs_calibrated": [
+    0.9791776537895203,
+    0.020822159945964813,
+    2.6191168345235383e-08
+  ],
+  "uncertainty_std": [
+    2.384185791015625e-07,
+    1.862645149230957e-09,
+    7.105427357601002e-15
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "image": "C:\\Users\\ADMIN\\OneDrive\\Desktop\\xrayy\\xr-classifier\\COVID-19_Radiography_Dataset\\Normal\\images\\Normal-5288.png",
+  "predicted_class": 1,
+  "probs_calibrated": [
+    0.09009071439504623,
+    0.9098950624465942,
+    1.4342364920594264e-05
+  ],
+  "uncertainty_std": [
+    2.2351741790771484e-08,
+    5.960464477539063e-08,
+    4.547473508864641e-12
+  ]
+}

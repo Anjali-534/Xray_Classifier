@@ -29,6 +29,10 @@ class PredictResponse(BaseModel):
     model_version: str
     disclaimer: str
 
+@app.get("/")
+def read_root():
+    return {"message": "Hello, world!"}
+
 @app.get("/health")
 def health():
     return {"status": "ok"}

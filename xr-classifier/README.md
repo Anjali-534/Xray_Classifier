@@ -8,6 +8,8 @@ Upload a chest X-ray -> multi-label predictions with a heatmap overlay.
 ```bash
 # API
 uvicorn serving.app:app --reload --port 8000
+port http://127.0.0.1:8000/docs 
+     http://127.0.0.1:8000/redoc
 # Web
 cd webapp && npm install && npm run dev
 # to train model
