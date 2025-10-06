@@ -1,0 +1,17 @@
+# Ignore frontend build files
+webapp/
+node_modules/
+
+# Ignore training datasets & outputs
+COVID-19_Radiography_Dataset/
+outputs/
+logs/
+
+# Ignore virtual environments
+.venv/
+__pycache__/
+*.pyc
+
+# Ignore git
+.git
+.gitignore

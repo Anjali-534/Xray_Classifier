@@ -1,0 +1,24 @@
+CLASSES :
+  -Atelectasis
+  -Cardiomegaly
+  -Consolidation
+  -Edema
+  -Effusion
+  -Emphysema
+  -Fibrosis
+  -Hernia
+  -Infiltration
+  -Pneumonia
+  -Pneumothorax
+  -Fracture
+  -Mass
+  -Nodule
+  -Pleural_Thickening
+  -Support_Devices
+  -Normal
+  -Other
+  -Unclassified
+  
+
+    
+
