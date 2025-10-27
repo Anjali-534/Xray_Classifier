@@ -1,18 +1,21 @@
 import React, { useState } from "react";
-import { UploadPanel } from "./components/UploadPanel";
-import { ResultsPanel } from "./components/ResultsPanel";
-
-import type { Result } from "./components/ResultsPanel";
+import { Container, Typography, Box } from "@mui/material";
+import UploadPanel from "./components/UploadPanel";
+import ResultsPanel, { Result } from "./components/ResultsPanel";
 
 const App: React.FC = () => {
   const [result, setResult] = useState<Result | null>(null);
 
   return (
-    <div className="container mt-5">
-      <h2 className="mb-4 text-center">🩺 Chest X-Ray Analyzer</h2>
+    <Container maxWidth="md">
+      <Box sx={{ mt: 5, textAlign: "center" }}>
+        <Typography variant="h4" gutterBottom>
+          🩺 Chest X-Ray Analyzer
+        </Typography>
+      </Box>
       <UploadPanel onResult={setResult} />
       <ResultsPanel result={result} />
-    </div>
+    </Container>
   );
 };
 

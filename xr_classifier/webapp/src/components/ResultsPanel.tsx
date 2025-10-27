@@ -1,34 +1,31 @@
-// src/components/ResultsPanel.tsx
-import React from 'react';
+import React from "react";
+import { Typography, Paper, Divider, List, ListItem } from "@mui/material";
+import GradCamCard from "./GradCamCard";
 
 export interface Result {
   predicted_class: string;
   confidence: number;
-  gradcam_url?: string;
+  uncertainty: number;
+  gradcam_url: string;
 }
 
-export const ResultsPanel: React.FC<{ result: Result | null }> = ({ result }) => {
+interface Props { result: Result | null; }
+
+const ResultsPanel: React.FC<Props> = ({ result }) => {
   if (!result) return null;
 
   return (
-    <div className="mt-4">
-      <h5>Prediction Results</h5>
-      <p>
-        <strong>Predicted Class:</strong> {result.predicted_class}
-      </p>
-      <p>
-        <strong>Confidence:</strong> {(result.confidence * 100).toFixed(2)}%
-      </p>
-      {result.gradcam_url && (
-        <div className="mt-3">
-          <h6>Grad-CAM Visualization</h6>
-          <img
-            src={result.gradcam_url}
-            alt="Grad-CAM"
-            className="img-fluid rounded shadow"
-          />
-        </div>
-      )}
-    </div>
+    <Paper elevation={3} sx={{ p: 3, mt: 3 }}>
+      <Typography variant="h6" gutterBottom>📋 Prediction Results</Typography>
+      <Divider sx={{ mb: 2 }} />
+      <List>
+        <ListItem>🧩 Class: <strong>{result.predicted_class}</strong></ListItem>
+        <ListItem>🔢 Confidence: {(result.confidence * 100).toFixed(2)}%</ListItem>
+        <ListItem>📉 Uncertainty: {(result.uncertainty * 100).toFixed(2)}%</ListItem>
+      </List>
+      {result.gradcam_url && <GradCamCard imageUrl={result.gradcam_url} />}
+    </Paper>
   );
 };
+
+export default ResultsPanel;
